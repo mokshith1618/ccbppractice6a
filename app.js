@@ -78,5 +78,64 @@ app.delete("/districts/:districtId/", async (request, response) => {
   const dbResponse = await db.run(deleteDistrictQuery);
   response.send("District Removed");
 });
-
+app.get("/districts/:districtId/", async (request, response) => {
+  const { districtId } = request.params;
+  const getDistrictQuery = `
+    SELECT 
+        *
+    FROM 
+        district
+    WHERE 
+        district_id=${districtId}`;
+  const district = await db.get(getDistrictQuery);
+  response.send({
+    districtId: district.district_id,
+    districtName: district.district_name,
+    stateId: district.state_id,
+    cases: district.cases,
+    cured: district.cured,
+    active: district.active,
+    deaths: district.deaths,
+  });
+});
+app.put("/districts/:districtId/", async (request, response) => {
+  const { districtId } = request.params;
+  const { districtName, stateId, cases, cured, active, deaths } = request.body;
+  const putDistrictQuery = `
+    UPDATE district
+    SET
+        district_name='${districtName}',
+        state_id=${stateId},
+        cases=${cases},
+        cured=${cured},
+        active=${active},
+        deaths=${deaths}
+    WHERE 
+        district_id=${districtId};`;
+  let dbResponse = await db.run(putDistrictQuery);
+  response.send("District Details Updated");
+});
+app.get("/states/:stateId/stats/", async (request, response) => {
+  const { stateId } = request.params;
+  const getStateQuery = `
+    SELECT 
+        state_id,
+        SUM(cases) as total_cases,
+        SUM(cured) as total_cured,
+        SUM(active) as total_active,
+        SUM(deaths) as total_deaths
+    FROM 
+        district
+    GROUP BY 
+        state_id
+    HAVING 
+        state_id=${stateId} ;`;
+  let state = await db.get(getStateQuery);
+  response.send({
+    totalCases: state.total_cases,
+    totalCured: state.total_cured,
+    totalActive: state.total_active,
+    totalDeaths: state.total_deaths,
+  });
+});
 module.exports = app;
