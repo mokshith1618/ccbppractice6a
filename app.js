@@ -138,4 +138,20 @@ app.get("/states/:stateId/stats/", async (request, response) => {
     totalDeaths: state.total_deaths,
   });
 });
+app.get("/districts/:districtId/details/", async (request, response) => {
+  const { districtId } = request.params;
+  const getStateQuery = `
+    SELECT 
+        T.state_name as state_name
+    FROM 
+        (district 
+        INNER JOIN state 
+        ON district.state_id=state.state_id) as T
+    WHERE 
+        district_id=${districtId};`;
+  const state = await db.get(getStateQuery);
+  response.send({
+    stateName: state.state_name,
+  });
+});
 module.exports = app;
