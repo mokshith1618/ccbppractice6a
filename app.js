@@ -69,5 +69,14 @@ app.post("/districts/", async (request, response) => {
   const dbResponse = await db.run(postDistrictQuery);
   response.send("District Successfully Added");
 });
+app.delete("/districts/:districtId/", async (request, response) => {
+  const { districtId } = request.params;
+  let deleteDistrictQuery = `
+    DELETE FROM 
+        district
+    WHERE district_id=${districtId};`;
+  const dbResponse = await db.run(deleteDistrictQuery);
+  response.send("District Removed");
+});
 
 module.exports = app;
